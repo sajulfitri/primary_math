@@ -1,180 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Math Learning Portal</title>
+    <!-- Keep previous styles -->
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-color: #f0f8ff;
-        }
-
-        #timer {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            font-size: 24px;
+        /* Add new error message style */
+        .error-message {
+            color: #d32f2f;
+            margin: 10px 0;
             font-weight: bold;
-            color: #2c3e50;
-        }
-
-        #question-container {
-            margin-top: 50px;
-            text-align: center;
-        }
-
-        .question {
-            font-size: 48px;
-            margin: 20px;
-            color: #2980b9;
-        }
-
-        #answer-input {
-            width: 200px;
-            height: 60px;
-            font-size: 40px;
-            text-align: center;
-            margin: 20px;
-            border: 3px solid #3498db;
-            border-radius: 10px;
-        }
-
-        #keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin: 20px;
-        }
-
-        .key {
-            width: 80px;
-            height: 80px;
-            font-size: 24px;
-            border: none;
-            border-radius: 10px;
-            background-color: #3498db;
-            color: white;
-            cursor: pointer;
-        }
-
-        .key:hover {
-            background-color: #2980b9;
-        }
-
-        #controls {
-            display: flex;
-            gap: 10px;
-            margin: 20px;
-        }
-
-        #results {
             display: none;
-            font-size: 24px;
-            text-align: center;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #ecf0f1;
         }
     </style>
 </head>
 <body>
-    <div id="timer">Time: 0s</div>
-    <div id="question-container">
-        <div class="question" id="question"></div>
-        <input type="text" id="answer-input" readonly>
-        <div id="keypad">
-            <button class="key" data-value="1">1</button>
-            <button class="key" data-value="2">2</button>
-            <button class="key" data-value="3">3</button>
-            <button class="key" data-value="4">4</button>
-            <button class="key" data-value="5">5</button>
-            <button class="key" data-value="6">6</button>
-            <button class="key" data-value="7">7</button>
-            <button class="key" data-value="8">8</button>
-            <button class="key" data-value="9">9</button>
-            <button class="key" data-value="0">0</button>
-            <button class="key" id="backspace">⌫</button>
-        </div>
-        <div id="controls">
-            <button class="key" id="submit" style="width: 180px;">Submit</button>
+    <!-- Modify profile section -->
+    <div id="welcome-screen">
+        <h1>Math Learning Portal</h1>
+        <div id="profile">
+            <input type="text" id="student-name" placeholder="Enter your name" 
+                   style="font-size: 18px; padding: 8px; border: 2px solid #1976d2; border-radius: 5px;">
+            <div class="error-message" id="name-error">Please enter your name to start!</div>
+            <select id="module-select" class="module-selector">
+                <option value="1">1-Digit Addition</option>
+                <option value="2">2-Digit Addition</option>
+                <option value="3">3-Digit Addition</option>
+            </select>
+            <button class="btn" onclick="startQuiz()">Start Quiz</button>
         </div>
     </div>
-    <div id="results"></div>
+
+    <!-- Rest of the body remains same -->
 
     <script>
-        let currentQuestion = 0;
-        let correctAnswers = 0;
-        let startTime;
-        let timerInterval;
-        let currentLevel = 1;
-        let num1, num2, correctAnswer;
-
-        function generateQuestion() {
-            const max = Math.pow(10, currentLevel) - 1;
-            num1 = Math.floor(Math.random() * (max - Math.pow(10, currentLevel - 1) + 1)) + Math.pow(10, currentLevel - 1);
-            num2 = Math.floor(Math.random() * (max - Math.pow(10, currentLevel - 1) + 1)) + Math.pow(10, currentLevel - 1);
-            correctAnswer = num1 + num2;
-            document.getElementById('question').textContent = `${num1} + ${num2} = ?`;
-        }
-
-        function updateTimer() {
-            const currentTime = Math.floor((Date.now() - startTime) / 1000);
-            document.getElementById('timer').textContent = `Time: ${currentTime}s`;
-        }
-
-        function showResults() {
-            clearInterval(timerInterval);
-            const totalTime = Math.floor((Date.now() - startTime) / 1000);
-            const percentage = (correctAnswers / 20 * 100).toFixed(1);
-            document.getElementById('results').innerHTML = `
-                <h2>Results</h2>
-                <p>Time Taken: ${totalTime} seconds</p>
-                <p>Correct Answers: ${correctAnswers}/20</p>
-                <p>Percentage Correct: ${percentage}%</p>
-                <p>Percentage Wrong: ${100 - percentage}%</p>
-                <button onclick="location.reload()">Try Again</button>
-            `;
-            document.getElementById('question-container').style.display = 'none';
-            document.getElementById('results').style.display = 'block';
-        }
-
-        // Event listeners
-        document.querySelectorAll('.key:not(#backspace)').forEach(button => {
-            button.addEventListener('click', (e) => {
-                if (e.target.id !== 'backspace' && e.target.id !== 'submit') {
-                    const input = document.getElementById('answer-input');
-                    input.value += e.target.dataset.value;
-                }
-            });
-        });
-
-        document.getElementById('backspace').addEventListener('click', () => {
-            const input = document.getElementById('answer-input');
-            input.value = input.value.slice(0, -1);
-        });
-
-        document.getElementById('submit').addEventListener('click', () => {
-            const userAnswer = parseInt(document.getElementById('answer-input').value) || 0;
-            if (userAnswer === correctAnswer) correctAnswers++;
-            document.getElementById('answer-input').value = '';
+        // Modified startQuiz function with validation
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name');
+            const errorDiv = document.getElementById('name-error');
             
-            currentQuestion++;
-            if (currentQuestion >= 20) {
-                showResults();
-            } else {
-                generateQuestion();
+            // Validate student name
+            if (!nameInput.value.trim()) {
+                errorDiv.style.display = 'block';
+                nameInput.style.borderColor = '#d32f2f';
+                nameInput.focus();
+                return;
+            }
+            
+            // Clear error if valid
+            errorDiv.style.display = 'none';
+            nameInput.style.borderColor = '#1976d2';
+            
+            studentName = nameInput.value.trim();
+            currentLevel = parseInt(document.getElementById('module-select').value);
+            
+            document.getElementById('welcome-screen').style.display = 'none';
+            document.querySelector('.container').style.display = 'grid';
+            
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimer, 1000);
+            generateQuestion();
+        }
+
+        // Add input event listener to clear error while typing
+        document.getElementById('student-name').addEventListener('input', function() {
+            if (this.value.trim()) {
+                document.getElementById('name-error').style.display = 'none';
+                this.style.borderColor = '#1976d2';
             }
         });
 
-        // Initialize
-        startTime = Date.now();
-        timerInterval = setInterval(updateTimer, 1000);
-        generateQuestion();
+        // Rest of the script remains same -->
     </script>
 </body>
 </html>
