@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Learning Portal</title>
     <style>
-
-      body {
+        body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
             margin: 0;
             padding: 20px;
@@ -84,6 +83,8 @@
             font-weight: bold;
             display: none;
             animation: shake 0.5s;
+            font-size: 18px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
         }
 
         @keyframes shake {
@@ -92,7 +93,15 @@
             75% { transform: translateX(5px); }
         }
 
-        /* Rest of the CSS remains same with adjustments */
+        #timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+
         .container {
             display: grid;
             grid-template-columns: 1fr 2fr;
@@ -112,59 +121,6 @@
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             height: fit-content;
             position: relative;
-        }
-
-        #controls {
-            position: absolute;
-            bottom: -80px;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-
-        /* body {
-            font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #f0f9ff;
-            min-height: 100vh;
-        }
-
-        #welcome-screen {
-            text-align: center;
-            margin-top: 100px;
-        }
-
-        #profile {
-            margin: 20px;
-            padding: 10px;
-            display: inline-block;
-        }
-
-        #timer {
-            position: fixed;
-            top: 10px;
-            right: 10px;
-            font-size: 24px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        .container {
-            display: grid;
-            grid-template-columns: 1fr 2fr;
-            gap: 30px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        #keypad {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            padding: 20px;
-            background: #e3f2fd;
-            border-radius: 15px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         .question-section {
@@ -213,7 +169,7 @@
         #controls {
             text-align: center;
             margin-top: 20px;
-        }*/
+        }
 
         #results {
             display: none;
@@ -225,44 +181,11 @@
             background-color: #fff;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
-
-        .module-selector {
-            padding: 10px 20px;
-            margin: 10px;
-            border-radius: 8px;
-            border: 2px solid #1976d2;
-            font-size: 16px;
-        } 
-
-        .btn {
-            padding: 12px 24px;
-            background-color: #1976d2;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            transition: background-color 0.2s;
-        }
-
-        .btn:hover {
-            background-color: #0d47a1;
-        }
-
-        .error-message {
-            color: #d32f2f;
-            margin: 10px 0;
-            font-weight: bold;
-            display: none;
-            animation: shake 0.5s;
-            font-size: 18px;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
-        }
     </style>
 </head>
 <body>
     <div id="welcome-screen">
-        <h1>Math Learning Portal</h1>
+        <h1 style="color: #1976d2; text-shadow: 2px 2px 4px rgba(0,0,0,0.1);">Math Learning Portal</h1>
         <div id="profile">
             <input type="text" id="student-name" placeholder="Enter your name">
             <div class="error-message" id="name-error">Please enter your name to start!</div>
@@ -290,14 +213,14 @@
             <button class="key" data-value="3">3</button>
             <button class="key" data-value="0">0</button>
             <button class="key" id="backspace">⌫</button>
+            <div id="controls">
+                <button class="btn" id="submit">Submit Answer</button>
+            </div>
         </div>
 
         <div class="question-section">
             <div class="question" id="question"></div>
             <input type="text" id="answer-input" readonly>
-            <div id="controls">
-                <button class="btn" id="submit">Submit Answer</button>
-            </div>
         </div>
     </div>
 
@@ -312,7 +235,6 @@
         let studentName = '';
         let num1, num2, correctAnswer;
 
-     // Fixed startQuiz function
         function startQuiz() {
             const nameInput = document.getElementById('student-name');
             const errorDiv = document.getElementById('name-error');
@@ -329,7 +251,7 @@
                 return;
             }
             
-            // If validation passes, start the quiz
+            // If validation passes
             studentName = nameInput.value.trim();
             currentLevel = parseInt(document.getElementById('module-select').value);
             
@@ -340,15 +262,6 @@
             timerInterval = setInterval(updateTimer, 1000);
             generateQuestion();
         }
-
-        // Add input event listener to clear error while typing
-        document.getElementById('student-name').addEventListener('input', function() {
-            if (this.value.trim()) {
-                document.getElementById('name-error').style.display = 'none';
-                this.style.borderColor = '#1976d2';
-            }
-        });
-
 
         function generateQuestion() {
             const max = Math.pow(10, currentLevel);
@@ -410,6 +323,14 @@
                 showResults();
             } else {
                 generateQuestion();
+            }
+        });
+
+        // Input validation
+        document.getElementById('student-name').addEventListener('input', function() {
+            if (this.value.trim()) {
+                document.getElementById('name-error').style.display = 'none';
+                this.style.borderColor = '#1976d2';
             }
         });
     </script>
