@@ -418,7 +418,7 @@
                     <div>Date: ${new Date(attempt.date).toLocaleString()}</div>
                     <div>Name: ${attempt.name}</div>
                     <div>Level: ${attempt.level}-digit</div>
-                    <div>Score: ${attempt.correct}/10 (${attempt.percentage}%)</div>
+                    <div>Score: ${attempt.correct}/${TOTAL_QUESTIONS}(${attempt.percentage}%)</div>
                     <div>Time: ${attempt.time}</div>
                     ${attempt.wrongAnswers.length ? `
                         <div class="wrong-answers">
