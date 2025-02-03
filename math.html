@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Learning Portal</title>
-
     <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
@@ -167,57 +166,7 @@
             transform: scale(1.05);
         }
 
-        #controls {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        #results {
-            display: none;
-            font-size: 24px;
-            text-align: center;
-            margin: 20px;
-            padding: 20px;
-            border-radius: 10px;
-            background-color: #fff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-         /* Add history styles */
-         #history {
-            display: none;
-            margin: 20px;
-            padding: 20px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-
-        .history-item {
-            margin: 10px 0;
-            padding: 10px;
-            border-bottom: 1px solid #eee;
-        }
-
-        .wrong-answers {
-            color: #d32f2f;
-            margin-top: 10px;
-        }
-
-        .wrong-answer {
-            margin: 5px 0;
-        }
-
-        .toggle-history {
-            margin-top: 20px;
-            cursor: pointer;
-            color: #1976d2;
-            text-decoration: underline;
-        }
-
-
-         /* Add progress bar styles */
-         #progress {
+        #progress {
             width: 200px;
             height: 20px;
             background: #ddd;
@@ -248,8 +197,49 @@
 
         .status-dot.correct { background: #4CAF50; }
         .status-dot.wrong { background: #f44336; }
-</style>
 
+        #results {
+            display: none;
+            font-size: 24px;
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        #history {
+            display: none;
+            margin: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .history-item {
+            margin: 10px 0;
+            padding: 10px;
+            border-bottom: 1px solid #eee;
+        }
+
+        .wrong-answers {
+            color: #d32f2f;
+            margin-top: 10px;
+        }
+
+        .wrong-answer {
+            margin: 5px 0;
+        }
+
+        .toggle-history {
+            margin-top: 20px;
+            cursor: pointer;
+            color: #1976d2;
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
     <div id="welcome-screen">
@@ -298,6 +288,7 @@
 
     <div id="results"></div>
     <div id="history"></div>
+
     <script>
         let currentQuestion = 0;
         let correctAnswers = 0;
@@ -306,17 +297,17 @@
         let currentLevel = 1;
         let studentName = '';
         let num1, num2, correctAnswer;
-        const TOTAL_QUESTIONS = 20;
+        const TOTAL_QUESTIONS = 10;
+        let answerHistory = [];
+        let quizHistory = JSON.parse(localStorage.getItem('mathQuizHistory')) || [];
 
         function startQuiz() {
             const nameInput = document.getElementById('student-name');
             const errorDiv = document.getElementById('name-error');
             
-            // Clear previous error
             errorDiv.style.display = 'none';
             nameInput.style.borderColor = '#1976d2';
             
-            // Validate student name
             if (!nameInput.value.trim()) {
                 errorDiv.style.display = 'block';
                 nameInput.style.borderColor = '#d32f2f';
@@ -324,7 +315,6 @@
                 return;
             }
             
-            // If validation passes
             studentName = nameInput.value.trim();
             currentLevel = parseInt(document.getElementById('module-select').value);
             
@@ -354,27 +344,17 @@
                 `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        {/* function showResults() {
-            clearInterval(timerInterval);
-            const elapsed = Date.now() - startTime;
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            const percentage = (correctAnswers / 20 * 100).toFixed(1);
+        function updateProgress() {
+            const progress = (currentQuestion / TOTAL_QUESTIONS) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
             
-            document.getElementById('results').innerHTML = `
-                <h2>Results for ${studentName}</h2>
-                <p>Module: ${currentLevel}-Digit Addition</p>
-                <p>Time Taken: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</p>
-                <p>Correct Answers: ${correctAnswers}/20</p>
-                <p>Percentage Correct: ${percentage}%</p>
-                <p>Percentage Wrong: ${100 - percentage}%</p>
-                <button class="btn" onclick="location.reload()">Try Again</button>
-            `;
-            document.querySelector('.container').style.display = 'none';
-            document.getElementById('results').style.display = 'block';
-        } */}
+            const statusContainer = document.querySelector('.answer-status');
+            statusContainer.innerHTML = Array(TOTAL_QUESTIONS).fill()
+                .map((_, i) => `<div class="status-dot ${i < currentQuestion ? 
+                    (answerHistory[i]?.correct ? 'correct' : 'wrong') : ''}"></div>`)
+                .join('');
+        }
 
-// Modified showResults function
         function showResults() {
             clearInterval(timerInterval);
             const elapsed = Date.now() - startTime;
@@ -382,73 +362,6 @@
             const seconds = Math.floor((elapsed % 60000) / 1000);
             const percentage = (correctAnswers / TOTAL_QUESTIONS * 100).toFixed(0);
             
-            // Store quiz attempt
-            const quizAttempt = {
-                date: new Date().toISOString(),
-                name: studentName,
-                level: currentLevel,
-                correct: correctAnswers,
-                time: `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
-                percentage: percentage,
-                wrongAnswers: answerHistory.filter(a => !a.correct)
-            };
-
-            // Build visual results
-            const correctCount = correctAnswers;
-            const wrongCount = TOTAL_QUESTIONS - correctCount;
-            
-            document.getElementById('results').innerHTML = `
-                <h2>Results for ${studentName}</h2>
-                <div class="score-summary">
-                    <div style="color: #4CAF50; font-size: 48px; margin: 20px 0;">
-                        Correct: ${correctCount} (${percentage}%)
-                    </div>
-                    <div style="color: #f44336; font-size: 48px; margin: 20px 0;">
-                        Wrong: ${wrongCount} (${100 - percentage}%)
-                    </div>
-                </div>
-                ${/* Rest of results template */ ''}
-            `;
-
-            // Update progress bar
-            document.getElementById('progress-bar').style.width = '100%';
-        }
-
-        // Event listeners
-        document.querySelectorAll('.key:not(#backspace)').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const input = document.getElementById('answer-input');
-                input.value += e.target.dataset.value;
-            });
-        });
-
-        document.getElementById('backspace').addEventListener('click', () => {
-            const input = document.getElementById('answer-input');
-            input.value = input.value.slice(0, -1);
-        });
-
-
-        // Input validation
-        document.getElementById('student-name').addEventListener('input', function() {
-            if (this.value.trim()) {
-                document.getElementById('name-error').style.display = 'none';
-                this.style.borderColor = '#1976d2';
-            }
-        });
-
-        // Add history storage
-        let answerHistory = [];
-        let quizHistory = JSON.parse(localStorage.getItem('mathQuizHistory')) || [];
-
-        // Modified showResults function
-        function showResults() {
-            clearInterval(timerInterval);
-            const elapsed = Date.now() - startTime;
-            const minutes = Math.floor(elapsed / 60000);
-            const seconds = Math.floor((elapsed % 60000) / 1000);
-            const percentage = (correctAnswers / 20 * 100).toFixed(1);
-            
-            // Store quiz attempt
             const quizAttempt = {
                 date: new Date().toISOString(),
                 name: studentName,
@@ -462,7 +375,6 @@
             quizHistory.push(quizAttempt);
             localStorage.setItem('mathQuizHistory', JSON.stringify(quizHistory));
 
-            // Build results display
             let wrongAnswersHTML = '';
             answerHistory.forEach((answer, index) => {
                 if (!answer.correct) {
@@ -477,10 +389,14 @@
 
             document.getElementById('results').innerHTML = `
                 <h2>Results for ${studentName}</h2>
-                <p>Module: ${currentLevel}-Digit Addition</p>
-                <p>Time Taken: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</p>
-                <p>Correct Answers: ${correctAnswers}/20</p>
-                <p>Percentage Correct: ${percentage}%</p>
+                <div class="score-summary">
+                    <div style="color: #4CAF50; font-size: 48px; margin: 20px 0;">
+                        Correct: ${correctAnswers} (${percentage}%)
+                    </div>
+                    <div style="color: #f44336; font-size: 48px; margin: 20px 0;">
+                        Wrong: ${TOTAL_QUESTIONS - correctAnswers} (${100 - percentage}%)
+                    </div>
+                </div>
                 ${wrongAnswersHTML ? `
                     <div class="wrong-answers">
                         <h3>Incorrect Answers:</h3>
@@ -495,7 +411,6 @@
             document.getElementById('results').style.display = 'block';
         }
 
-        // Add history functions
         function showHistory() {
             const historyHTML = quizHistory.map((attempt, index) => `
                 <div class="history-item">
@@ -503,7 +418,7 @@
                     <div>Date: ${new Date(attempt.date).toLocaleString()}</div>
                     <div>Name: ${attempt.name}</div>
                     <div>Level: ${attempt.level}-digit</div>
-                    <div>Score: ${attempt.correct}/20 (${attempt.percentage}%)</div>
+                    <div>Score: ${attempt.correct}/10 (${attempt.percentage}%)</div>
                     <div>Time: ${attempt.time}</div>
                     ${attempt.wrongAnswers.length ? `
                         <div class="wrong-answers">
@@ -536,7 +451,18 @@
             showHistory();
         }
 
-        // Modified answer submission
+        document.querySelectorAll('.key:not(#backspace)').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const input = document.getElementById('answer-input');
+                input.value += e.target.dataset.value;
+            });
+        });
+
+        document.getElementById('backspace').addEventListener('click', () => {
+            const input = document.getElementById('answer-input');
+            input.value = input.value.slice(0, -1);
+        });
+
         document.getElementById('submit').addEventListener('click', () => {
             const userAnswer = parseInt(document.getElementById('answer-input').value) || 0;
             const isCorrect = userAnswer === correctAnswer;
@@ -562,8 +488,12 @@
             }
         });
 
-    
-
+        document.getElementById('student-name').addEventListener('input', function() {
+            if (this.value.trim()) {
+                document.getElementById('name-error').style.display = 'none';
+                this.style.borderColor = '#1976d2';
+            }
+        });
     </script>
 </body>
 </html>
