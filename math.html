@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Math Learning Portal</title>
 
-        <style>
+    <style>
         body {
             font-family: 'Comic Sans MS', 'Chalkboard SE', cursive;
             margin: 0;
@@ -214,7 +214,41 @@
             color: #1976d2;
             text-decoration: underline;
         }
-</style> 
+
+
+         /* Add progress bar styles */
+         #progress {
+            width: 200px;
+            height: 20px;
+            background: #ddd;
+            border-radius: 10px;
+            margin: 20px auto;
+        }
+
+        #progress-bar {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 10px;
+            transition: width 0.3s ease;
+        }
+
+        .answer-status {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+
+        .status-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #ddd;
+        }
+
+        .status-dot.correct { background: #4CAF50; }
+        .status-dot.wrong { background: #f44336; }
+</style>
 
 </head>
 <body>
@@ -257,6 +291,10 @@
             <input type="text" id="answer-input" readonly>
         </div>
     </div>
+    <div id="progress">
+        <div id="progress-bar" style="width: 0%"></div>
+    </div>
+    <div class="answer-status"></div>
 
     <div id="results"></div>
     <div id="history"></div>
@@ -268,6 +306,7 @@
         let currentLevel = 1;
         let studentName = '';
         let num1, num2, correctAnswer;
+        const TOTAL_QUESTIONS = 20;
 
         function startQuiz() {
             const nameInput = document.getElementById('student-name');
@@ -295,6 +334,7 @@
             startTime = Date.now();
             timerInterval = setInterval(updateTimer, 1000);
             generateQuestion();
+            updateProgress();
         }
 
         function generateQuestion() {
@@ -314,7 +354,7 @@
                 `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
-        function showResults() {
+        {/* function showResults() {
             clearInterval(timerInterval);
             const elapsed = Date.now() - startTime;
             const minutes = Math.floor(elapsed / 60000);
@@ -332,6 +372,46 @@
             `;
             document.querySelector('.container').style.display = 'none';
             document.getElementById('results').style.display = 'block';
+        } */}
+
+// Modified showResults function
+        function showResults() {
+            clearInterval(timerInterval);
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const percentage = (correctAnswers / TOTAL_QUESTIONS * 100).toFixed(0);
+            
+            // Store quiz attempt
+            const quizAttempt = {
+                date: new Date().toISOString(),
+                name: studentName,
+                level: currentLevel,
+                correct: correctAnswers,
+                time: `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`,
+                percentage: percentage,
+                wrongAnswers: answerHistory.filter(a => !a.correct)
+            };
+
+            // Build visual results
+            const correctCount = correctAnswers;
+            const wrongCount = TOTAL_QUESTIONS - correctCount;
+            
+            document.getElementById('results').innerHTML = `
+                <h2>Results for ${studentName}</h2>
+                <div class="score-summary">
+                    <div style="color: #4CAF50; font-size: 48px; margin: 20px 0;">
+                        Correct: ${correctCount} (${percentage}%)
+                    </div>
+                    <div style="color: #f44336; font-size: 48px; margin: 20px 0;">
+                        Wrong: ${wrongCount} (${100 - percentage}%)
+                    </div>
+                </div>
+                ${/* Rest of results template */ ''}
+            `;
+
+            // Update progress bar
+            document.getElementById('progress-bar').style.width = '100%';
         }
 
         // Event listeners
@@ -347,18 +427,6 @@
             input.value = input.value.slice(0, -1);
         });
 
-        document.getElementById('submit').addEventListener('click', () => {
-            const userAnswer = parseInt(document.getElementById('answer-input').value) || 0;
-            if (userAnswer === correctAnswer) correctAnswers++;
-            document.getElementById('answer-input').value = '';
-            
-            currentQuestion++;
-            if (currentQuestion >= 20) {
-                showResults();
-            } else {
-                generateQuestion();
-            }
-        });
 
         // Input validation
         document.getElementById('student-name').addEventListener('input', function() {
@@ -478,20 +546,23 @@
                 num2: num2,
                 correctAnswer: correctAnswer,
                 userAnswer: userAnswer,
-                correct: isCorrect,
-                timestamp: Date.now()
+                correct: isCorrect
             });
 
             if (isCorrect) correctAnswers++;
             document.getElementById('answer-input').value = '';
             
             currentQuestion++;
-            if (currentQuestion >= 20) {
+            updateProgress();
+            
+            if (currentQuestion >= TOTAL_QUESTIONS) {
                 showResults();
             } else {
                 generateQuestion();
             }
         });
+
+    
 
     </script>
 </body>
