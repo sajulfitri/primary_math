@@ -1,25 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Keep previous styles -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Math Learning Portal</title>
     <style>
-        /* Add new error message style */
-        .error-message {
-            color: #d32f2f;
-            margin: 10px 0;
+        body {
+            font-family: 'Arial Rounded MT Bold', Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f0f9ff;
+            min-height: 100vh;
+        }
+
+        #welcome-screen {
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        #profile {
+            margin: 20px;
+            padding: 10px;
+            display: inline-block;
+        }
+
+        #timer {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            font-size: 24px;
             font-weight: bold;
+            color: #2c3e50;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        #keypad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .question-section {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .question {
+            font-size: 48px;
+            margin: 20px;
+            color: #1a237e;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        #answer-input {
+            width: 200px;
+            height: 60px;
+            font-size: 40px;
+            text-align: center;
+            margin: 20px;
+            border: 3px solid #1565c0;
+            border-radius: 10px;
+            background: white;
+        }
+
+        .key {
+            width: 80px;
+            height: 80px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            background-color: #1976d2;
+            color: white;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .key:hover {
+            background-color: #0d47a1;
+            transform: scale(1.05);
+        }
+
+        #controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        #results {
             display: none;
+            font-size: 24px;
+            text-align: center;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .module-selector {
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 8px;
+            border: 2px solid #1976d2;
+            font-size: 16px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.2s;
+        }
+
+        .btn:hover {
+            background-color: #0d47a1;
         }
     </style>
 </head>
 <body>
-    <!-- Modify profile section -->
     <div id="welcome-screen">
         <h1>Math Learning Portal</h1>
         <div id="profile">
-            <input type="text" id="student-name" placeholder="Enter your name" 
-                   style="font-size: 18px; padding: 8px; border: 2px solid #1976d2; border-radius: 5px;">
-            <div class="error-message" id="name-error">Please enter your name to start!</div>
+            <input type="text" id="student-name" placeholder="Enter your name" style="font-size: 18px; padding: 8px;">
             <select id="module-select" class="module-selector">
                 <option value="1">1-Digit Addition</option>
                 <option value="2">2-Digit Addition</option>
@@ -29,27 +148,45 @@
         </div>
     </div>
 
-    <!-- Rest of the body remains same -->
+    <div id="timer">Time: 00:00</div>
+    
+    <div class="container" style="display: none;">
+        <div id="keypad">
+            <button class="key" data-value="7">7</button>
+            <button class="key" data-value="8">8</button>
+            <button class="key" data-value="9">9</button>
+            <button class="key" data-value="4">4</button>
+            <button class="key" data-value="5">5</button>
+            <button class="key" data-value="6">6</button>
+            <button class="key" data-value="1">1</button>
+            <button class="key" data-value="2">2</button>
+            <button class="key" data-value="3">3</button>
+            <button class="key" data-value="0">0</button>
+            <button class="key" id="backspace">⌫</button>
+        </div>
+
+        <div class="question-section">
+            <div class="question" id="question"></div>
+            <input type="text" id="answer-input" readonly>
+            <div id="controls">
+                <button class="btn" id="submit">Submit Answer</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="results"></div>
 
     <script>
-        // Modified startQuiz function with validation
+        let currentQuestion = 0;
+        let correctAnswers = 0;
+        let startTime;
+        let timerInterval;
+        let currentLevel = 1;
+        let studentName = '';
+        let num1, num2, correctAnswer;
+
         function startQuiz() {
-            const nameInput = document.getElementById('student-name');
-            const errorDiv = document.getElementById('name-error');
-            
-            // Validate student name
-            if (!nameInput.value.trim()) {
-                errorDiv.style.display = 'block';
-                nameInput.style.borderColor = '#d32f2f';
-                nameInput.focus();
-                return;
-            }
-            
-            // Clear error if valid
-            errorDiv.style.display = 'none';
-            nameInput.style.borderColor = '#1976d2';
-            
-            studentName = nameInput.value.trim();
+            studentName = document.getElementById('student-name').value || 'Student';
             currentLevel = parseInt(document.getElementById('module-select').value);
             
             document.getElementById('welcome-screen').style.display = 'none';
@@ -60,15 +197,68 @@
             generateQuestion();
         }
 
-        // Add input event listener to clear error while typing
-        document.getElementById('student-name').addEventListener('input', function() {
-            if (this.value.trim()) {
-                document.getElementById('name-error').style.display = 'none';
-                this.style.borderColor = '#1976d2';
-            }
+        function generateQuestion() {
+            const max = Math.pow(10, currentLevel);
+            const min = Math.pow(10, currentLevel - 1);
+            num1 = Math.floor(Math.random() * (max - min)) + min;
+            num2 = Math.floor(Math.random() * (max - min)) + min;
+            correctAnswer = num1 + num2;
+            document.getElementById('question').textContent = `${num1} + ${num2} = ?`;
+        }
+
+        function updateTimer() {
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            document.getElementById('timer').textContent = 
+                `Time: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function showResults() {
+            clearInterval(timerInterval);
+            const elapsed = Date.now() - startTime;
+            const minutes = Math.floor(elapsed / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            const percentage = (correctAnswers / 20 * 100).toFixed(1);
+            
+            document.getElementById('results').innerHTML = `
+                <h2>Results for ${studentName}</h2>
+                <p>Module: ${currentLevel}-Digit Addition</p>
+                <p>Time Taken: ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}</p>
+                <p>Correct Answers: ${correctAnswers}/20</p>
+                <p>Percentage Correct: ${percentage}%</p>
+                <p>Percentage Wrong: ${100 - percentage}%</p>
+                <button class="btn" onclick="location.reload()">Try Again</button>
+            `;
+            document.querySelector('.container').style.display = 'none';
+            document.getElementById('results').style.display = 'block';
+        }
+
+        // Event listeners
+        document.querySelectorAll('.key:not(#backspace)').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const input = document.getElementById('answer-input');
+                input.value += e.target.dataset.value;
+            });
         });
 
-        // Rest of the script remains same -->
+        document.getElementById('backspace').addEventListener('click', () => {
+            const input = document.getElementById('answer-input');
+            input.value = input.value.slice(0, -1);
+        });
+
+        document.getElementById('submit').addEventListener('click', () => {
+            const userAnswer = parseInt(document.getElementById('answer-input').value) || 0;
+            if (userAnswer === correctAnswer) correctAnswers++;
+            document.getElementById('answer-input').value = '';
+            
+            currentQuestion++;
+            if (currentQuestion >= 20) {
+                showResults();
+            } else {
+                generateQuestion();
+            }
+        });
     </script>
 </body>
 </html>
