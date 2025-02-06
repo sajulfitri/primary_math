@@ -334,6 +334,8 @@
             num2 = Math.floor(Math.random() * (max - min)) + min;
             correctAnswer = num1 + num2;
             document.getElementById('question').textContent = `${num1} + ${num2} = ?`;
+            document.getElementById('answer-input').value = '';
+            updateSubmitButtonState();
         }
 
         function updateTimer() {
@@ -451,20 +453,37 @@
             showHistory();
         }
 
+        function updateSubmitButtonState() {
+            const input = document.getElementById('answer-input');
+            const submitButton = document.getElementById('submit');
+            submitButton.disabled = !input.value.trim();
+            submitButton.style.opacity = input.value.trim() ? '1' : '0.5';
+            submitButton.style.cursor = input.value.trim() ? 'pointer' : 'not-allowed';
+        }
+
+        document.getElementById('answer-input').addEventListener('input', updateSubmitButtonState);
+
         document.querySelectorAll('.key:not(#backspace)').forEach(button => {
             button.addEventListener('click', (e) => {
                 const input = document.getElementById('answer-input');
                 input.value += e.target.dataset.value;
+                updateSubmitButtonState();
             });
         });
 
         document.getElementById('backspace').addEventListener('click', () => {
             const input = document.getElementById('answer-input');
             input.value = input.value.slice(0, -1);
+            updateSubmitButtonState();
         });
 
         document.getElementById('submit').addEventListener('click', () => {
-            const userAnswer = parseInt(document.getElementById('answer-input').value) || 0;
+            const input = document.getElementById('answer-input');
+            if (!input.value.trim()) {
+                return;
+            }
+            
+            const userAnswer = parseInt(input.value) || 0;
             const isCorrect = userAnswer === correctAnswer;
             
             answerHistory.push({
@@ -476,7 +495,7 @@
             });
 
             if (isCorrect) correctAnswers++;
-            document.getElementById('answer-input').value = '';
+            input.value = '';
             
             currentQuestion++;
             updateProgress();
